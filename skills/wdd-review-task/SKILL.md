@@ -64,6 +64,7 @@ Trigger whenever Lens 1, Lens 2, or Lens 3 uncovers any spec gap, bug, missing t
    - If `round > 3`: **Trip the circuit breaker.** Stop dispatching fix rounds for `#<task-id>`, preserve `<task-worktree>` for inspection, record the exact unresolved findings in `.wdd/state.md` (if in an Epic), and escalate to the user with a concise diagnosis and options.
 2. **Dispatch Scoped Fix Subagent (`round <= 3`):**
    - Because `<task-worktree>` still exists with all dependencies already installed, dispatch (or resume) a native subagent inside `<task-worktree>` on branch `task/<task-id>-<slug>` using [references/fix-subagent-prompt.md](./references/fix-subagent-prompt.md).
+   - **Subagent Model Selection:** Use the task's `Subagent Model` (**defaulting to `flash`**—or the harness's fast/flash tier—whenever unspecified during task planning) for Fix Rounds 1–2; if a `flash` subagent fails to converge after Round 2, you may escalate Round 3 to a higher reasoning tier (`pro` / `inherit`) before tripping the circuit breaker.
    - List every defect with exact `file:line` references and concrete acceptance expectations. If the subagent touched a forbidden sibling-wave file, instruct it to `git checkout <base-ref> -- <forbidden-file>` and solve the requirement within its allowed scope (or report `BLOCKED` if impossible).
 3. When the fix subagent finishes, increment `round` and **re-run Step 1 & Step 2** over the full `<base-ref>...task/<task-id>-<slug>` range. Never skip re-review after a fix!
 

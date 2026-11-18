@@ -27,13 +27,14 @@ Adapt section headings and prose to the user's / repository's language (e.g., PT
 
 ### Repository: `<owner/repo>`
 
-| Issue | Wave | Title | Depends On |
-| :--- | :--- | :--- | :--- |
-| #<id> | Wave 1 | `feat(<scope>): <title>` | — |
-| #<id> | Wave 1 | `feat(<scope>): <title>` | — |
-| #<id> | Wave 2 | `feat(<scope>): <title>` | #<id>, #<id> |
+| Issue | Wave | Model | Title | Depends On |
+| :--- | :--- | :--- | :--- | :--- |
+| #<id> | Wave 1 | `flash` | `feat(<scope>): <title>` | — |
+| #<id> | Wave 1 | `flash` | `feat(<scope>): <title>` | — |
+| #<id> | Wave 2 | `flash` | `feat(<scope>): <title>` | #<id>, #<id> |
 
-<!-- Include additional repository tables here if the Epic is cross-repo -->
+<!-- Include additional repository tables here if the Epic is cross-repo.
+     Default Model to `flash` unless the user explicitly requested another model/tier during planning. -->
 
 ---
 
@@ -69,7 +70,7 @@ Final Delivery:   Integration check ──► Open consolidated PR (`epic/<epic-
 ## Coordinator Execution Protocol (`wdd-run-epic`)
 
 1. **Target Branch:** `epic/<epic-id>-<slug>` branched from `origin/main` in an isolated sibling git worktree (`<parent>/.worktrees/<repo>/epic-<epic-id>-<slug>`).
-2. **Wave Dispatch:** Spawn one isolated subagent per task in the current wave (`task/<task-id>-<slug>` worktree) using `wdd-execute-task` with fresh dependency installation (no shared symlinks).
+2. **Wave Dispatch:** Spawn one isolated subagent per task in the current wave (`task/<task-id>-<slug>` worktree) using `wdd-execute-task` with fresh dependency installation (no shared symlinks), passing each task's `Subagent Model` (**defaulting to `flash`** whenever unspecified).
 3. **Wave Gate (`wdd-review-task`):** Coordinator reviews `git diff epic/<epic-id>-<slug>...task/<task-id>-<slug>` directly (up to 3 fix rounds in the task worktree if needed), merges cleanly into `epic/<epic-id>-<slug>`, and immediately removes the temporary task worktree and `task/<task-id>-<slug>` branch.
 4. **Progress & Final PR:** Keep Epic and Task issues **OPEN** during wave execution (update checkboxes and post concise wave-completion comments here). After the final wave passes integration checks, open **one consolidated PR per repo** against `main` containing `Closes #<epic-id>` and `Closes #<all-repo-task-ids>`, and deliver the PR link without merging.
 

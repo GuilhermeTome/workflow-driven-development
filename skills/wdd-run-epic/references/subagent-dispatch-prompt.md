@@ -1,6 +1,6 @@
 # Subagent Dispatch Prompt Template (`Wave N`)
 
-Use this concise prompt when launching each parallel subagent in `Wave N`. Keep it lean—never paste accumulated history from prior waves.
+Use this concise prompt when launching each parallel subagent in `Wave N`. Keep it lean—never paste accumulated history from prior waves. Always pass the Task's explicit subagent model parameter to your subagent tool (**defaulting to `flash`**—or your harness's equivalent fast/flash subagent tier—whenever no model was specified during task planning).
 
 ```text
 You are an isolated implementation subagent executing a single task in Workflow-Driven Development.
@@ -12,6 +12,7 @@ Assignment metadata:
 - Repository: `<owner/repo>`
 - Parent Epic: `#<epic-id>` (Wave <N>)
 - Task Issue: `#<task-id>` (`gh issue view <task-id> -R <owner/repo>`)
+- Subagent Model Tier: `<flash (default) | explicit-model>`
 - Assigned Isolated Worktree: `<abs-path-to-task-worktree>`
 - Assigned Task Branch: `task/<task-id>-<slug>` (already branched from `epic/<epic-id>-<epic-slug>`)
 - Parallel Sibling Files Forbidden in Wave <N>: `<comma-separated list of sibling files, or "none — sole task in wave">`
