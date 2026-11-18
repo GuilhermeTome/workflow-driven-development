@@ -1,0 +1,74 @@
+name: Bug Report
+description: Report a defect in a WDD skill, git worktree helper, or installer script.
+title: "fix(<scope>): "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue with **Workflow-Driven Development (WDD)**. Please fill out the details below so maintainers can reproduce and fix the behavior quickly.
+
+  - type: dropdown
+    id: affected-skill
+    attributes:
+      label: Affected Skill or Component
+      description: Which WDD skill or script exhibited the issue?
+      options:
+        - wdd-create-epic
+        - wdd-create-task
+        - wdd-run-epic
+        - wdd-execute-task
+        - wdd-review-task
+        - wdd-worktree.sh (git worktree helper)
+        - scripts/install.sh or scripts/uninstall.sh
+        - Documentation / Multiple Components
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agent-harness
+    attributes:
+      label: Agent Harness
+      description: Which AI coding agent CLI or IDE were you running?
+      options:
+        - Claude Code
+        - Google Antigravity / Gemini CLI
+        - OpenAI Codex CLI
+        - OpenCode
+        - npx skills CLI / Shell Only
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Details
+      description: OS, Bash version, Git version, and GitHub CLI (`gh`) version.
+      placeholder: "Ubuntu 24.04 · Bash 5.2 · Git 2.43 · gh 2.60"
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Exact prompt, command, or Epic/Task setup that triggered the problem.
+      placeholder: |
+        1. Run `bash scripts/install.sh --all` (or invoke `/wdd-run-epic #12`)
+        2. ...
+        3. Observe error: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-vs-actual
+    attributes:
+      label: Expected vs. Actual Behavior
+      description: Describe what should have happened versus what actually occurred (include relevant logs or `git worktree list` output if helpful).
+      placeholder: |
+        **Expected:** ...
+
+        **Actual:** ...
+    validations:
+      required: true

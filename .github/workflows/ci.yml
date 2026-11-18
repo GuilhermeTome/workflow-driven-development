@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'epic/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Skill Pack
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git identity for worktree sandbox tests
+        run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@example.com"
+
+      - name: Run ShellCheck on shell scripts
+        run: shellcheck scripts/*.sh tests/*.sh skills/wdd-run-epic/scripts/*.sh
+
+      - name: Run WDD pack validation test suite
+        run: bash tests/validate-pack.sh
