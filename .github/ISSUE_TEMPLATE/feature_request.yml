@@ -1,0 +1,52 @@
+name: Feature Request
+description: Propose an improvement to an existing WDD skill, tooling script, or a new workflow capability.
+title: "feat(<scope>): "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propose an enhancement or new capability for **Workflow-Driven Development (WDD)**. Keep harness-agnosticism and zero-conflict wave execution in mind when describing workflow changes.
+
+  - type: dropdown
+    id: target-capability
+    attributes:
+      label: Target Skill / New Capability
+      description: Which area of WDD does this proposal target?
+      options:
+        - wdd-create-epic
+        - wdd-create-task
+        - wdd-run-epic
+        - wdd-execute-task
+        - wdd-review-task
+        - New WDD Skill
+        - wdd-worktree.sh / Installer / CI Tooling
+        - Documentation & Examples
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: What workflow friction, edge case, or limitation are you trying to solve?
+      placeholder: "When running cross-repository epics with ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-behavior
+    attributes:
+      label: Proposed Workflow Behavior
+      description: How should the skill, coordinator, subagent, or CLI script behave?
+      placeholder: "Update `wdd-run-epic` Step 3 to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives & Trade-offs Considered
+      description: Optional notes on alternative designs, backward compatibility, or multi-harness considerations.
+    validations:
+      required: false
