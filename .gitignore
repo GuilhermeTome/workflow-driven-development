@@ -1,4 +1,12 @@
+# WDD ephemeral worktrees & local epic state
+.worktrees/
+.wdd/
+
+# OS metadata
 .DS_Store
 Thumbs.db
+
+# Editor swap & backup files
 *.swp
+*.swo
 *~
