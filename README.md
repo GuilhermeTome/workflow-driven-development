@@ -128,6 +128,21 @@ To cleanly remove WDD without touching third-party skills, run [`scripts/uninsta
 /wdd-review-task #77
 ```
 
+### 3. Bonus: Multi-Agent IDE Orchestration (e.g., Orca)
+
+Inside multi-agent IDEs like **Orca**, you can delegate an entire Epic (`wdd-run-epic`) to a dedicated IDE worktree tab so your main chat stays completely free:
+
+- **Option 1 — Supervised Worker with Automatic PR Callback (`orchestration`):**
+  ```text
+  /orchestration open a new worktree with claude to execute Epic #42 using wdd-run-epic with parallel native subagents per wave, and report back with the final PR URL when done.
+  ```
+- **Option 2 — Independent Fire-and-Forget Worktree Tab (`orca worktree create`):**
+  ```bash
+  orca worktree create --name "epic-42" --branch "epic/42-webhook-reliability" --base-branch "origin/main" --no-parent --agent claude --prompt "Use wdd-run-epic (with native subagents per wave) to execute Epic #42 end-to-end and open the consolidated PR against main." --activate --json
+  ```
+
+See the full architecture diagram, CLI flags, and subagent authorization notes in [**Bonus: Orchestrating WDD Inside Multi-Agent IDEs (Orca)**](./docs/installation.md).
+
 ---
 
 ## Core Invariants

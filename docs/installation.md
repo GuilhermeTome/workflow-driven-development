@@ -285,3 +285,109 @@ rm -rf ~/.agents/skills/wdd-{create-epic,create-task,run-epic,execute-task,revie
 
 > [!IMPORTANT]
 > **Note on Auto-Push Rules in `AGENTS.md`:** If your repository's `AGENTS.md` normally instructs agents to `git push` or merge immediately after every task, `wdd-run-epic`'s subagent dispatch prompt automatically scopes task subagents to commit locally on `task/<id>-<slug>` without pushing or opening intermediate PRs—ensuring clean Coordinator review and single-PR delivery to `main`.
+
+---
+
+## 6. Bonus: Orchestrating WDD Inside Multi-Agent IDEs (Orca)
+
+While WDD runs natively inside any standalone CLI or editor session, it pairs exceptionally well with multi-agent IDEs like **Orca** when you want to delegate an entire Epic to a background IDE worktree tab—keeping your primary chat session completely free for architecture, planning additional Epics, or running multiple Epics concurrently across different models (`claude`, `antigravity`, `codex`, etc.).
+
+### Three-Tier Non-Overlapping Architecture
+
+Orca's `orchestration` / worktree layer and WDD operate at complementary, non-overlapping levels:
+
+- **Tier 1 — Primary IDE Chat (Human Orchestrator):** Remains unblocked for design discussions, `/wdd-create-epic` slicing, or supervising several Epics simultaneously.
+- **Tier 2 — Dedicated IDE Worktree Coordinator (Orca Worker):** Opens as a visible worktree tab in the Orca sidebar, runs [`wdd-run-epic`](../skills/wdd-run-epic/SKILL.md) with your chosen agent (`claude`, `antigravity`, `codex`, etc.), and handles IDE-level coordination signals (`ask`, `escalation`, `worker_done`).
+- **Tier 3 — Ephemeral Parallel Wave Subagents (`wdd-execute-task`):** Spawned *inside* Tier 2 per wave in isolated `task/<id>-<slug>` git worktrees, audited directly via [`wdd-review-task`](../skills/wdd-review-task/SKILL.md), merged cleanly into `epic/<id>-<slug>`, and deleted immediately after each wave.
+
+```mermaid
+flowchart TD
+    Chat["Tier 1: Your Primary Orca Chat (Stays Free)"]
+    Worker["Tier 2: Orca Worktree Worker Running wdd-run-epic"]
+
+    subgraph WavePool["Tier 3: Ephemeral Parallel Wave Subagents (wdd-execute-task)"]
+        direction LR
+        Sub1["task/T1-slug Worktree"]
+        Sub2["task/T2-slug Worktree"]
+        Sub3["task/T3-slug Worktree"]
+    end
+
+    Gate["Direct Diff Review & Clean Merge into epic/E-slug (wdd-review-task)"]
+    PR["Consolidated PR Opened Against main (Human Review)"]
+
+    Chat -->|"Option 1: worker-start OR Option 2: worktree create"| Worker
+    Worker --> Sub1
+    Worker --> Sub2
+    Worker --> Sub3
+    Sub1 --> Gate
+    Sub2 --> Gate
+    Sub3 --> Gate
+    Gate -->|"All waves green"| PR
+    PR -.->|"Option 1 only: worker_done wakes primary chat with PR URL"| Chat
+```
+
+Because every Git worktree shares the repository's underlying `--git-common-dir` object store, running [`wdd-worktree.sh`](../skills/wdd-run-epic/scripts/wdd-worktree.sh) from inside an Orca-managed worktree seamlessly creates and cleans up `epic/<id>-<slug>` and `task/<id>-<slug>` worktrees without repository duplication or conflicts.
+
+---
+
+### Option 1 — Supervised Execution with Automatic Callback (`orchestration` + `wdd-run-epic`)
+
+Use **Option 1** when you want your current chat to launch a child worktree worker, go idle at zero token cost while waves execute, and be **automatically woken up (`worker_done`)** with the consolidated Pull Request URL once the Epic finishes.
+
+#### Prompt from your primary Orca chat
+
+```text
+/orchestration open a new worktree with claude (or antigravity) to execute Epic #42 using wdd-run-epic with parallel native subagents per wave, and report back with the final PR URL when done.
+```
+
+#### Underlying Orca CLI recipe (`orca orchestration worker-start`)
+
+```bash
+orca orchestration worker-start \
+  --worktree new-child \
+  --name "epic-42" \
+  --base-branch "origin/main" \
+  --agent claude \
+  --task-title "Run WDD Epic #42" \
+  --spec "Use the wdd-run-epic skill (~/.agents/skills/wdd-run-epic/SKILL.md) to execute GitHub Epic #42 end-to-end across all waves using your native subagents in isolated task worktrees. Never merge into main; open the consolidated PR against main and report the PR URL via worker_done."
+```
+
+> [!IMPORTANT]
+> **Authorizing Native Subagents Inside Orca Workers:** Orca's default dispatched-worker preamble includes the rule *"Do only this task, yourself: no subagents or helper workers unless the task asks."* Always state explicitly in your prompt or `--spec` **"using `wdd-run-epic` with parallel native subagents per wave"**—that instruction explicitly authorizes the Tier 2 Epic Coordinator to spawn its Tier 3 wave subagents.
+
+---
+
+### Option 2 — Independent Fire-and-Forget Worktree Handoff (`orca worktree create` + `wdd-run-epic`)
+
+Use **Option 2** when you simply want to spin up an independent, top-level worktree tab in the Orca sidebar running `/wdd-run-epic #<id>` on its own—with nothing expected back in your current chat.
+
+#### Prompt from your primary Orca chat
+
+```text
+Create an independent Orca worktree on branch epic/42-webhook-reliability with claude starting "/wdd-run-epic #42".
+```
+
+#### Underlying Orca CLI recipe (`orca worktree create`)
+
+```bash
+orca worktree create \
+  --name "epic-42" \
+  --branch "epic/42-webhook-reliability" \
+  --base-branch "origin/main" \
+  --no-parent \
+  --agent claude \
+  --prompt "Use wdd-run-epic (with native subagents per wave) to execute Epic #42 end-to-end and open the consolidated PR against main." \
+  --activate \
+  --json
+```
+
+---
+
+### Choosing Between Option 1 and Option 2
+
+| Dimension | Option 1: Supervised Worker (`worker-start`) | Option 2: Fire-and-Forget (`worktree create`) |
+| :--- | :--- | :--- |
+| **Parent Chat Wakeup** | Automatically wakes your originating chat via `worker_done` with the final PR URL and verification summary. | None—runs completely independently in its own Orca tab. |
+| **Blocker / Question Routing** | Routes `ask` and `escalation` signals back to your supervising chat so your coordinator can reply or surface them. | Questions or blockers wait directly inside that worktree's own chat tab. |
+| **Worktree Lineage** | Linked as a child worktree (`--worktree new-child`) under your current workspace Run. | Independent top-level worktree (`--no-parent`) in the Orca sidebar. |
+| **Best Use Case** | Delegating 1 or more Epics from an active planning chat and receiving consolidated PR links back automatically. | Handing off an Epic to run overnight or switching focus completely to an unrelated project. |
