@@ -20,8 +20,9 @@ Orchestrate a GitHub Epic wave-by-wave from start to finish: isolate the epic in
    - A task failing review after 3 fix rounds;
    - A contradictory specification where every path forward is guesswork.
 2. **Never Merge into `main`:** Wave merges happen **exclusively** into `epic/<id>-<slug>` (preventing partial production deployments). Delivery to `main` is **always** a Pull Request URL handed to the user.
-3. **Native Subagents + Git Worktrees (Harness-Agnostic):**
+3. **Native Subagents, `flash` Model Default & Git Worktrees (Harness-Agnostic):**
    - Use the current agent harness's native subagent tool (`Task` in Claude Code, `invoke_subagent` in Antigravity, etc.) to launch all tasks of the active wave in parallel in a single turn.
+   - **Always specify the subagent model explicitly—defaulting to `flash`:** Read `Subagent Model` from the Task issue (or Epic table / user instruction). Whenever no model was explicitly specified during task planning, **prioritize the `flash` model tier** (e.g., `Model: "flash"` when natively supported, or the harness's equivalent fast/flash subagent tier such as `haiku` in harnesses that use tier aliases) instead of leaving the model unset/`inherit`.
    - Give every subagent its own dedicated `<parent>/.worktrees/<repo>/task-<id>-<slug>` directory created via [scripts/wdd-worktree.sh](./scripts/wdd-worktree.sh). Never run two subagents in the same directory, and never touch the user's primary `main` checkout.
 4. **Issues Stay Open Until `main` Merge:** Update Epic checkboxes and post concise wave-completion comments as waves land on `epic/<id>-<slug>`, but **do NOT close** the Epic or child Task issues manually—let GitHub close them automatically via `Closes #<id>` when the human merges the final PR into `main`.
 
@@ -75,6 +76,7 @@ bash <skill-dir>/scripts/wdd-worktree.sh task-init \
 
 In **one single turn**, launch one native subagent per `Wave N` task using [references/subagent-dispatch-prompt.md](./references/subagent-dispatch-prompt.md):
 
+- Explicitly pass the subagent model declared on the Task issue (**defaulting to `flash`**—or the harness's equivalent fast/flash tier—whenever no model was specified during planning; never leave the model silently on `inherit` unless requested).
 - Instruct each subagent to read and follow [`wdd-execute-task`](../wdd-execute-task/SKILL.md).
 - Pass only what it needs: repository `owner/repo`, `<task-id>`, `<task-worktree>`, `task/<task-id>-<task-slug>`, `epic/<epic-id>-<slug>`, the sibling files reserved in `Wave N`, and the path to `wdd-execute-task/SKILL.md`. Do NOT paste session history into subagent prompts.
 
@@ -107,7 +109,7 @@ After the final wave (`Wave K`) merges into `epic/<epic-id>-<slug>`, run an inte
 1. Install clean dependencies in `<epic-worktree>` (following [`wdd-execute-task/references/bootstrap-and-verify.md`](../wdd-execute-task/references/bootstrap-and-verify.md)) so cross-wave interactions are tested together.
 2. Run the affected test suites, production asset build (if frontend changed), and formatter/linter checks across `git diff --name-only origin/main...HEAD`.
 3. If cross-wave integration broke a test or build:
-   - Create a short-lived fix worktree (`task-init "<repo-path>" "<epic-id>-intfix" "integration-fix" "epic/<epic-id>-<slug>"`), dispatch a subagent to fix the exact regression, review and merge it via `wdd-review-task`, and push `epic/<epic-id>-<slug>`.
+   - Create a short-lived fix worktree (`task-init "<repo-path>" "<epic-id>-intfix" "integration-fix" "epic/<epic-id>-<slug>"`), dispatch a subagent (defaulting to `flash`, or escalating if cross-wave reasoning requires it) to fix the exact regression, review and merge it via `wdd-review-task`, and push `epic/<epic-id>-<slug>`.
 
 ### 5. Open Consolidated PR(s) Against `main` & Deliver Links
 

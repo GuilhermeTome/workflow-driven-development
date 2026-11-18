@@ -24,7 +24,7 @@ Author a GitHub Epic issue that acts as both the **binding architectural specifi
 Never slice an epic from assumptions or unverified file names.
 
 1. If a knowledge-graph MCP (such as `graphify`) is configured in the environment, query it first to locate modules, symbols, and cross-repository touchpoints.
-2. When multiple subsystems, screens, or sibling repositories are involved, dispatch **parallel read-only subagents** to inventory:
+2. When multiple subsystems, screens, or sibling repositories are involved, dispatch **parallel read-only subagents** (prioritizing the **`flash`** / fast model tier unless the user requested otherwise) to inventory:
    - Exact file paths, existing reusable components/services/actions, and line counts.
    - Repository rules in `AGENTS.md` / `CLAUDE.md` (modularity/line-count ceilings, test frameworks, formatters, baseline lint/type debt).
    - Cross-repository boundaries (e.g., backend API repo vs. frontend/funnel repo) and git remotes (`gh repo view --json nameWithOwner`).
@@ -66,7 +66,7 @@ Design the Directed Acyclic Graph (DAG) of child tasks (`Wave 1`, `Wave 2`, ...,
 1. Read and follow [`wdd-create-task`](../wdd-create-task/SKILL.md) to author each child Task issue file (`/tmp/wdd-task-1.md`, `/tmp/wdd-task-2.md`, ...).
 2. Every child Task issue MUST include:
    - Reference to the parent Epic (`#<epic-id>` if same repo, `<primary-owner/repo>#<epic-id>` if cross-repo).
-   - Its assigned Wave number and upstream task dependencies (for Wave 2+, create Wave 1 issues first so Wave 2+ bodies can cite real `#<id>` numbers!).
+   - Its assigned Wave number, upstream task dependencies (for Wave 2+, create Wave 1 issues first so Wave 2+ bodies can cite real `#<id>` numbers!), and **`Subagent Model: flash` by default** (unless the user explicitly requested a different model for specific tasks).
    - Its exclusive **Allowed Files** list AND the **Parallel Wave Exclusion** warning listing sibling files in the same wave that it must NOT touch.
 3. Create the issues wave-by-wave (parallel `gh issue create` calls within each wave are safe and fast) and record every returned `#<task-id>` and URL.
 

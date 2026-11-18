@@ -1,6 +1,6 @@
 # Scoped Fix Subagent Prompt Template (Rounds 1–3)
 
-Use this prompt when `wdd-review-task` finds defects on `task/<task-id>-<slug>`. Dependencies are already installed inside `<task-worktree>`—do NOT re-install them unless `composer.json` / `package.json` changed.
+Use this prompt when `wdd-review-task` finds defects on `task/<task-id>-<slug>`. Dependencies are already installed inside `<task-worktree>`—do NOT re-install them unless `composer.json` / `package.json` changed. Pass the task's `Subagent Model` (**defaulting to `flash`** when unspecified on Rounds 1–2, optionally escalating on Round 3 if Round 2 failed to converge).
 
 ```text
 You are executing Fix Round <R>/3 for Task #<task-id> in Workflow-Driven Development.
@@ -8,6 +8,7 @@ You are executing Fix Round <R>/3 for Task #<task-id> in Workflow-Driven Develop
 Assignment metadata:
 - Repository: `<owner/repo>`
 - Task Issue: `#<task-id>` (`gh issue view <task-id> -R <owner/repo>`)
+- Subagent Model Tier: `<flash (default) | escalated-or-explicit-model>`
 - Existing Worktree (dependencies already installed): `<abs-path-to-task-worktree>`
 - Branch: `task/<task-id>-<slug>`
 - Base Branch for Diff Check: `<epic/<epic-id>-<slug> OR origin/main>`

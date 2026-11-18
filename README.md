@@ -49,7 +49,7 @@ flowchart TD
 
 1. **Plan Epic & Wave DAG:** [`wdd-create-epic`](./skills/wdd-create-epic/SKILL.md) inspects the codebase, freezes shared DTO/API/SQL contracts, verifies zero file overlap within each wave, and batch-creates self-contained child issues via [`wdd-create-task`](./skills/wdd-create-task/SKILL.md).
 2. **Isolated Epic Worktree:** [`wdd-run-epic`](./skills/wdd-run-epic/SKILL.md) creates a dedicated sibling checkout (`<parent>/.worktrees/<repo>/epic-<id>-<slug>`) on branch `epic/<id>-<slug>` via [`wdd-worktree.sh`](./skills/wdd-run-epic/scripts/wdd-worktree.sh)—leaving your primary working directory untouched.
-3. **Parallel Task Worktrees:** For each wave, isolated `task/<id>-<slug>` worktrees fork from `epic/<id>-<slug>`. Concurrent subagents run [`wdd-execute-task`](./skills/wdd-execute-task/SKILL.md) with clean per-worktree dependency installs, strict file-boundary enforcement, automated tests, and Conventional Commits.
+3. **Parallel Task Worktrees (`flash` Subagents by Default):** For each wave, isolated `task/<id>-<slug>` worktrees fork from `epic/<id>-<slug>`. Concurrent subagents—**defaulting to the `flash` model tier** whenever no specific model was requested during planning—run [`wdd-execute-task`](./skills/wdd-execute-task/SKILL.md) with clean per-worktree dependency installs, strict file-boundary enforcement, automated tests, and Conventional Commits.
 4. **Direct Coordinator Review & Clean Merge:** [`wdd-review-task`](./skills/wdd-review-task/SKILL.md) audits each task diff across three lenses (spec completeness, wave file isolation, and `AGENTS.md` compliance), dispatches up to 3 scoped fix rounds if needed, merges `--no-ff` into `epic/<id>-<slug>`, and immediately deletes temporary task worktrees and branches.
 5. **Human-Gated Consolidated PR:** After all waves pass a whole-epic integration check, WDD opens a single Pull Request to `main` (`Closes #<epic>` + `Closes #<tasks>`) and hands the final merge decision to a human maintainer.
 
@@ -148,6 +148,7 @@ See the full architecture diagram, CLI flags, and subagent authorization notes i
 ## Core Invariants
 
 - **Zero File Overlap per Wave:** Tasks scheduled in the same `(Wave, Repository)` pair own strictly disjoint file sets; shared contracts or schemas land in an earlier foundational wave.
+- **`flash`-First Subagent Default:** Because architectural contracts are frozen upfront in GitHub Issues, task and discovery subagents default to the fast, cost-efficient `flash` model tier whenever no explicit model was requested during planning.
 - **Dedicated `epic/<id>-<slug>` Branch:** Intermediate wave tasks merge (`--no-ff`) into `epic/<id>-<slug>` so `main` stays untouched and deploy-safe until the entire Epic is verified.
 - **Fresh Per-Worktree Dependencies:** Every task worktree installs its dependencies from scratch—never symlinking `node_modules/`, `vendor/`, or `.venv/` across concurrent workers.
 - **Direct Diff Review + 3-Round Fix Cap:** Coordinators audit `git diff` directly across spec, isolation, and `AGENTS.md` lenses, dispatching at most 3 scoped fix rounds before escalating to a human.

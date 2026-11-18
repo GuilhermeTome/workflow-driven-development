@@ -3,8 +3,9 @@
 Adapt section headings and prose to the user's / repository's language (e.g., PT-BR or EN) while preserving all structural guarantees below.
 
 ```markdown
-> **Epic:** #<epic-id> · **Wave:** Wave <N> · **Depends on:** <`—` or `#<id>, #<id>`>
-<!-- Omit blockquote above only for standalone tasks without a parent Epic -->
+> **Epic:** #<epic-id> · **Wave:** Wave <N> · **Depends on:** <`—` or `#<id>, #<id>`> · **Subagent Model:** `flash`
+<!-- For standalone tasks without a parent Epic, keep only: > **Subagent Model:** `flash`
+     Always default Subagent Model to `flash` unless the user explicitly requested another model/tier during planning. -->
 
 ## Context
 

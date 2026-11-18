@@ -17,10 +17,11 @@ Write and publish a **100% self-contained GitHub Task issue** that an isolated s
 2. **Append-to-Epic Mode:** Add one or more new tasks to an already open Epic `#<epic-id>`, validating wave dependencies and updating the Epic's Wave DAG and File Isolation Matrix afterward.
 3. **Standalone Task Mode:** Create a single focused Task issue without a parent Epic (executed later via `wdd-execute-task` + `wdd-review-task` to produce a direct PR against `main`).
 
-## Language & Title Convention
+## Language, Title & Subagent Model Convention
 
 - Match the **user's conversation / repository issue language** (e.g., PT-BR or EN) for prose, headings, and checklists.
 - Use **Conventional Commit format** for the issue title: `feat(<scope>): <summary>`, `fix(<scope>): <summary>`, `refactor(<scope>): <summary>`, or `chore(<scope>): <summary>`.
+- **Default Subagent Model (`flash`):** Because WDD freezes architectural contracts, file boundaries, and test cases upfront in the issue body, always prioritize and record **`Subagent Model: flash`** by default whenever the user has not explicitly specified another model or tier while planning the task. Record a heavier tier (e.g., `pro`, `standard`, or an explicit model ID) **only** when the user explicitly requested or confirmed it during planning.
 
 ## Step-by-Step Workflow
 
@@ -38,7 +39,9 @@ Never publish a vague wish-list issue. Inspect the target repository first (usin
 
 Structure the issue body following [references/task-issue-template.md](./references/task-issue-template.md). Every Task issue MUST contain these seven elements:
 
-1. **Parent Epic & Wave Header** *(omit only in Standalone mode)*: Link to `#<epic-id>` (or `<owner/repo>#<epic-id>`), assigned `Wave N`, and explicit `Depends on` list.
+1. **Metadata Header (Epic, Wave & Subagent Model):**
+   - **Epic-attached mode:** `> **Epic:** #<epic-id> · **Wave:** Wave <N> · **Depends on:** <— or #ids> · **Subagent Model:** <flash (default) | explicit-model>`
+   - **Standalone mode:** `> **Subagent Model:** <flash (default) | explicit-model>` (always `flash` unless the user requested another model).
 2. **Context & Concrete Blockers:** Cite the exact files/methods/lines and explain what currently fails, is missing, or violates canonical patterns.
 3. **Prescriptive Implementation Scope:** Numbered subsections specifying:
    - Exact class/action/service/component names and method signatures;
